@@ -1,0 +1,3 @@
+[submodule "Assets/ThirdParties"]
+	path = Assets/ThirdParties
+	url = https://github.com/nayechan/nayechan-GJL-2025-ThirdParties.git

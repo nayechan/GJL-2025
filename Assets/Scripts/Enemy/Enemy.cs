@@ -17,7 +17,7 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     {
         Damage damage = RollAttack();
 
-        Debug.Log($"Enemy dealt {damage.Amount} damage. HP: {combatStatus.currentHP}");
+        Debug.Log($"Enemy dealt {damage.Amount} damage. HP: {combatStatus.CurrentHp}");
         
         target.TakeDamage(damage);
     }
@@ -27,7 +27,7 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     {
         long finalDamage = combatStatus.ApplyDamage(damage);
 
-        Debug.Log($"Enemy took {finalDamage} damage. HP: {combatStatus.currentHP}");
+        Debug.Log($"Enemy took {finalDamage} damage. HP: {combatStatus.CurrentHp}");
 
         if (combatStatus.IsDead)
             Die();

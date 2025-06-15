@@ -1,10 +1,20 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour, IAttacker, IDamageable
 {
     [SerializeField] private CombatStatus combatStatus;
+    [SerializeField] private float attackDelay = 0.5f;
+
+    private bool isCooldown = false;
 
     public CombatStatus CombatStatus => combatStatus;
+
+    private void Start()
+    {
+        combatStatus.InitialCallback();
+    }
 
     public Damage RollAttack()
     {
@@ -38,5 +48,22 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
         Debug.Log("Enemy Died");
         // 사망 처리 (사망 애니메이션, 제거, 보상 등)
         Destroy(gameObject);
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.tag == "Player" && !isCooldown)
+        {
+            Player player = other.GetComponent<Player>();
+            Attack(player);
+            isCooldown = true;
+            StartCoroutine(ResetCooldown());
+        }
+    }
+
+    private IEnumerator ResetCooldown()
+    {
+        yield return new WaitForSeconds(attackDelay);
+        isCooldown = false;
     }
 }

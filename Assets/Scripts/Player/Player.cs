@@ -16,19 +16,23 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     [SerializeField] private float wallCheckDistance = 0.1f;
     [SerializeField] private Transform wallCheckPoint;
 
+    [SerializeField] private GameObject weaponGameObj;
     
     [SerializeField] private int jumpCount = 0;
     [SerializeField] private float wallSlideSpeed = 1f;
     
-    [SerializeField] private CombatStatus combatStatus;
+    [SerializeField] private PlayerCombatStatus combatStatus;
+    
+    [SerializeField] private bool isGrounded = true;
+
+    [field: SerializeField]
+    public Transform AttackPos { get; private set; }
     
     private Rigidbody2D playerRigidbody;
     private Animator animator;
-
-    [SerializeField] private bool isGrounded = true;
-
+    
     public CombatStatus CombatStatus => combatStatus;
-
+    
     private void Awake()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
@@ -47,13 +51,13 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
         UpdateAnimator();
         
         if(Input.GetKey(KeyCode.Alpha1))
-            CombatStatus.GainExp(1);
+            combatStatus.GainExp(1);
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            CombatStatus.ApplyDamage(new Damage(10,this,DamageType.True));
+            combatStatus.ApplyDamage(new Damage(10,this,DamageType.True));
         
         if (Input.GetMouseButtonDown(0))
-            AttackMotion();
+            TryAttack();
     }
 
     private void UpdateGroundedStatus()
@@ -81,14 +85,21 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     }
 
 
-    public Damage RollAttack()
+    public Damage RollAttack(Weapon weapon = null)
     {
-        return new Damage(combatStatus.attackPower, this, DamageType.Physical);
+        if(weapon == null)
+            return new Damage(combatStatus.attackPower, this, DamageType.Physical);
+
+        return new Damage(combatStatus.attackPower + weapon.BaseDamage, this, weapon.GetDamageType());
     }
 
-    public void AttackMotion()
+    public void TryAttack()
     {
-        animator.SetTrigger("attack");
+        Weapon weapon = null;
+        weaponGameObj.TryGetComponent(out weapon);
+        
+        if(weapon == null || weapon.TryAttack())
+            animator.SetTrigger("attack");
     }
 
     // IAttacker 구현

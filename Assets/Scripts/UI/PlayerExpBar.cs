@@ -9,13 +9,15 @@ public class PlayerExpBar : MonoBehaviour
     [SerializeField] private TMP_Text levelText;
     private void Start()
     {
-        player.CombatStatus.OnExpChanged += Refresh;
+        PlayerCombatStatus combatStatus = (PlayerCombatStatus) player.CombatStatus;
+        combatStatus.OnExpChanged += Refresh;
     }
 
     private void Refresh()
     {
-        image.fillAmount = player.CombatStatus.ExpRatio;
-        levelText.text = $"Lv. {player.CombatStatus.level:N0}";
+        PlayerCombatStatus combatStatus = (PlayerCombatStatus) player.CombatStatus;
+        image.fillAmount = combatStatus.ExpRatio;
+        levelText.text = $"Lv. {combatStatus.level:N0}";
     }
         
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
+[CreateAssetMenu(menuName = "Add Sword", fileName = "New Sword")]
 public class Sword : Weapon
 {
     [SerializeField] private GameObject swordEffectPrefab;
@@ -9,10 +10,17 @@ public class Sword : Weapon
     protected override void Attack()
     {
         AttackEffect attackEffect = 
-            Instantiate(swordEffectPrefab, player.AttackPos).GetComponent<AttackEffect>();
+            Instantiate(swordEffectPrefab, player.WeaponTransform).GetComponent<AttackEffect>();
         
+        
+        attackEffect.transform.localScale *= ScaleModifier;
         attackEffect.Init(this);
     }
 
     public override DamageType GetDamageType() => DamageType.Physical;
+
+    public override void OnUse(Player _player)
+    {
+        _player.EquipWeapon(this);
+    }
 }

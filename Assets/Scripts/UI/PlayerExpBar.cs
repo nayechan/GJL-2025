@@ -6,11 +6,12 @@ public class PlayerExpBar : MonoBehaviour
 {
     [SerializeField] private Player player;
     [SerializeField] private Image image;
-    [SerializeField] private TMP_Text levelText;
+    [SerializeField] private TMP_Text levelText, expText;
     private void Start()
     {
         PlayerStatus playerStatus = player.PlayerStatus;
         playerStatus.OnExpChanged += Refresh;
+        Refresh();
     }
 
     private void Refresh()
@@ -18,6 +19,7 @@ public class PlayerExpBar : MonoBehaviour
         PlayerStatus playerStatus = player.PlayerStatus;
         image.fillAmount = playerStatus.ExpRatio;
         levelText.text = $"Lv. {playerStatus.Level:N0}";
+        expText.text = $"★ {playerStatus.CurrentExp:N0}/{playerStatus.MaxExp:N0}";
     }
         
 }

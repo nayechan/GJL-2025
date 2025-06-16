@@ -16,7 +16,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     [SerializeField] private float wallCheckDistance = 0.1f;
     [SerializeField] private Transform wallCheckPoint;
 
-    [SerializeField] private GameObject weaponGameObj;
+    [SerializeField] private Weapon currentWeapon;
     
     [SerializeField] private int jumpCount = 0;
     
@@ -26,7 +26,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     [SerializeField] private bool isGrounded = true;
 
     [field: SerializeField]
-    public Transform AttackPos { get; private set; }
+    public Transform WeaponTransform { get; private set; }
     
     private Rigidbody2D playerRigidbody;
     private Animator animator;
@@ -40,6 +40,8 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
         animator = GetComponent<Animator>();
         combatStatus.Init(level => (long)(Mathf.Pow(level, 1.5f) * 10 + 90));
         playerStatus = new PlayerStatus(combatStatus);
+
+        EquipWeapon(currentWeapon);
     }
 
 
@@ -87,12 +89,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 
     public void TryAttack()
     {
-        Weapon weapon = null;
-        weaponGameObj.TryGetComponent(out weapon);
-        //if (weapon != null)
-        //    weapon.TryAttack();
-
-        if(weapon == null || weapon.TryAttack())
+        if(currentWeapon == null || currentWeapon.TryAttack())
             animator.SetTrigger("attack");
     }
 
@@ -155,5 +152,23 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
             //animator.SetBool("jump", true);
             jumpCount++;
         }
+    }
+
+    public void EquipWeapon(Weapon weapon)
+    {
+        foreach(Transform weaponTransform in WeaponTransform)
+        {
+            Destroy(weaponTransform.gameObject);
+        }
+
+        Weapon _weapon = Instantiate(weapon);
+        _weapon.Init(this);
+        
+        GameObject weaponInstance = Instantiate(_weapon.BaseWeaponPrefab, WeaponTransform);
+
+        currentWeapon = _weapon;
+        
+        weaponInstance.transform.localScale *= weapon.ScaleModifier;
+        weaponInstance.GetComponent<SpriteRenderer>().sprite = weapon.Sprite;
     }
 }

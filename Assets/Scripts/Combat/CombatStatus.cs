@@ -27,6 +27,9 @@ public class CombatStatus
 
     public Func<long, long> GetMaxHp;
 
+    public int life = 1;
+    public int maxLife = 1;
+
     public bool IsDead => currentHp <= 0;
 
     /// <summary>

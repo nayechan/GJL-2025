@@ -19,9 +19,9 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     [SerializeField] private GameObject weaponGameObj;
     
     [SerializeField] private int jumpCount = 0;
-    [SerializeField] private float wallSlideSpeed = 1f;
     
-    [SerializeField] private PlayerCombatStatus combatStatus;
+    [SerializeField] private CombatStatus combatStatus;
+    private PlayerStatus playerStatus;
     
     [SerializeField] private bool isGrounded = true;
 
@@ -32,16 +32,14 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     private Animator animator;
     
     public CombatStatus CombatStatus => combatStatus;
+    public PlayerStatus PlayerStatus => playerStatus;
     
     private void Awake()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-    }
-
-    private void Start()
-    {
-        combatStatus.InitialCallback();
+        combatStatus.Init(level => (long)(Mathf.Pow(level, 1.5f) * 10 + 90));
+        playerStatus = new PlayerStatus(combatStatus);
     }
 
 
@@ -49,12 +47,6 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     {
         UpdateGroundedStatus();
         UpdateAnimator();
-        
-        if(Input.GetKey(KeyCode.Alpha1))
-            combatStatus.GainExp(1);
-
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-            combatStatus.ApplyDamage(new Damage(10,this,DamageType.True));
         
         if (Input.GetMouseButtonDown(0))
             TryAttack();
@@ -97,7 +89,9 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     {
         Weapon weapon = null;
         weaponGameObj.TryGetComponent(out weapon);
-        
+        //if (weapon != null)
+        //    weapon.TryAttack();
+
         if(weapon == null || weapon.TryAttack())
             animator.SetTrigger("attack");
     }

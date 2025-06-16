@@ -8,12 +8,14 @@ public class CombatStatus
     
     public long level = 1;
 
-    public virtual long MaxHp => 5 * (level+1);
-    private long currentHp = 10;
+    public long attackPower = 10;
+    public long defense = 2;
+
+    private long currentHp;
     public long CurrentHp
     {
         get => currentHp;
-        protected set
+        set
         {
             if (currentHp != value)
             {
@@ -23,8 +25,7 @@ public class CombatStatus
         }
     }
 
-    public long attackPower = 10;
-    public long defense = 2;
+    public Func<long, long> GetMaxHp;
 
     public bool IsDead => currentHp <= 0;
 
@@ -46,16 +47,23 @@ public class CombatStatus
     /// </summary>
     public void Heal(long amount)
     {
-        CurrentHp = Math.Min(MaxHp, currentHp + amount);
+        CurrentHp = Math.Min(GetMaxHp(level), currentHp + amount);
     }
-    public virtual void InitialCallback()
+
+    public void CompleteHeal()
     {
-        currentHp = MaxHp;
+        CurrentHp = GetMaxHp(level);
+    }
+    
+    public virtual void Init(Func<long, long> _MaxHp)
+    {
+        GetMaxHp = _MaxHp;
+        currentHp = GetMaxHp(level);
         OnHpChanged?.Invoke();
     }
 
     /// <summary>
     /// 현재 체력을 퍼센트로 반환합니다.
     /// </summary>
-    public float HPRatio => MaxHp > 0 ? (float)currentHp / MaxHp : 0f;
+    public float HPRatio => GetMaxHp(level) > 0 ? (float)currentHp / GetMaxHp(level) : 0f;
 }

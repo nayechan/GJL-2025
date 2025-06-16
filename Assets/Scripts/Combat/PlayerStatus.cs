@@ -1,12 +1,11 @@
 using System;
 using UnityEngine;
 
-[System.Serializable]
-public class PlayerCombatStatus : CombatStatus
+public class PlayerStatus
 {
+    private CombatStatus combatStatus;
     public event Action OnExpChanged;
-
-    public long MaxExp => (long)(Mathf.Pow(level, 1.5f) * 20 + 20);
+    
     private long currentExp = 0;
     public long CurrentExp
     {
@@ -17,9 +16,9 @@ public class PlayerCombatStatus : CombatStatus
             OnExpChanged?.Invoke();
         }
     }
-    
-    public override long MaxHp => (long)(Mathf.Pow(level, 1.5f) * 10 + 90);
 
+    public long MaxExp => (long)(Mathf.Pow(combatStatus.level, 1.5f) * 20 + 20);
+    
     /// <summary>
     /// 경험치를 얻고, currentExp > MaxExp일때 레벨업합니다
     /// </summary>
@@ -37,17 +36,19 @@ public class PlayerCombatStatus : CombatStatus
         while (currentExp >= MaxExp)
         {
             currentExp -= MaxExp;
-            ++level;
+            ++combatStatus.level;
         }
         OnExpChanged?.Invoke();
-        CurrentHp = MaxHp;
+        combatStatus.CompleteHeal();
     }
+    
+    public long Level => combatStatus.level;
 
     public float ExpRatio => MaxExp > 0 ? (float)currentExp / MaxExp : 0f;
     
-    public override void InitialCallback()
+    public PlayerStatus(CombatStatus _combatStatus)
     {
-        base.InitialCallback();
+        combatStatus = _combatStatus;
         OnExpChanged?.Invoke();
     }
 

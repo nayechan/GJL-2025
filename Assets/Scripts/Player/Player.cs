@@ -1,47 +1,60 @@
 using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 {
-    [SerializeField] private float moveSpeed = 5f;
+    [FormerlySerializedAs("moveSpeed")] [SerializeField]
+    private float baseMoveSpeed = 5f;
+
     [SerializeField] private float jumpForce = 7f;
     [SerializeField] private int maxAdditionalJumps = 1;
-    
+
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
-    
+
     [SerializeField] private LayerMask wallLayer;
     [SerializeField] private float wallCheckDistance = 0.1f;
     [SerializeField] private Transform wallCheckPoint;
 
     [SerializeField] private Weapon currentWeapon;
-    
+    [SerializeField] private Inventory inventory;
+
     [SerializeField] private int jumpCount = 0;
-    
+
     [SerializeField] private CombatStatus combatStatus;
-    private PlayerStatus playerStatus;
-    
+    [SerializeField] private PlayerStatus playerStatus;
+
     [SerializeField] private bool isGrounded = true;
 
-    [field: SerializeField]
-    public Transform WeaponTransform { get; private set; }
-    
+    [SerializeField] private float invulnerabilityTime = 3.0f;
+
     private Rigidbody2D playerRigidbody;
     private Animator animator;
-    
+    private bool isInvulnerable = false;
+
+    [field: SerializeField] public Transform WeaponTransform { get; private set; }
+
     public CombatStatus CombatStatus => combatStatus;
     public PlayerStatus PlayerStatus => playerStatus;
-    
-    private void Awake()
+
+    public UnityEvent OnGameOver { get; private set; }
+
+private void Awake()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        combatStatus.Init(level => (long)(Mathf.Pow(level, 1.5f) * 10 + 90));
-        playerStatus = new PlayerStatus(combatStatus);
+        OnGameOver = new UnityEvent();
+        
+        combatStatus.Init();
+        playerStatus.Init(combatStatus);
 
-        EquipWeapon(currentWeapon);
+        inventory.UseItemInSlot(0);
     }
 
 
@@ -50,7 +63,10 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
         UpdateGroundedStatus();
         UpdateAnimator();
         
-        if (Input.GetMouseButtonDown(0))
+        if (CombatStatus.IsDead)
+            return;
+        
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             TryAttack();
     }
 
@@ -73,7 +89,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     private bool IsTouchingWall()
     {
         Vector2 boxCenter = wallCheckPoint.position;
-        Vector2 boxSize = new Vector2(wallCheckDistance, 1.7f); // 높이 1.6f, 너비는 wallCheckDistance
+        Vector2 boxSize = new Vector2(wallCheckDistance, 1.5f); // 높이 1.6f, 너비는 wallCheckDistance
         Collider2D hit = Physics2D.OverlapBox(boxCenter, boxSize, 0f, wallLayer);
         return hit != null;
     }
@@ -81,14 +97,31 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 
     public Damage RollAttack(Weapon weapon = null)
     {
+        long str = combatStatus.baseStats[(int)BaseStatType.STR];
+        long _int = combatStatus.baseStats[(int)BaseStatType.INT];
+        long dex = combatStatus.baseStats[(int)BaseStatType.DEX];
+        
         if(weapon == null)
-            return new Damage(combatStatus.attackPower, this, DamageType.Physical);
+            return new Damage(str, this, DamageType.Physical);
 
-        return new Damage(combatStatus.attackPower + weapon.BaseDamage, this, weapon.GetDamageType());
+        long damage = weapon.BaseDamage;
+
+        if (weapon.DamageType == DamageType.Physical)
+            damage += (long)(str * DamageUtility.GetEffectiveDamage(weapon.DamageType));
+        else if (weapon.DamageType == DamageType.Magical)
+            damage += (long)(_int * DamageUtility.GetEffectiveDamage(weapon.DamageType));
+        else if (weapon.DamageType == DamageType.Ranged)
+            damage += (long)(dex * DamageUtility.GetEffectiveDamage(weapon.DamageType));
+        
+        return new Damage(damage, this, weapon.DamageType,
+                weapon.KnockbackDuration, weapon.KnockbackIntensity, weapon.ParalyzeDuration);
     }
 
     public void TryAttack()
     {
+        if (CombatStatus.IsDead)
+            return;
+        
         if(currentWeapon == null || currentWeapon.TryAttack())
             animator.SetTrigger("attack");
     }
@@ -96,16 +129,27 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     // IAttacker 구현
     public void Attack(IDamageable target)
     {
+        if (CombatStatus.IsDead)
+            return;
+        
         Damage damage = RollAttack();
 
         Debug.Log($"Player dealt {damage.Amount} damage. HP: {combatStatus.CurrentHp}");
         
-        target.TakeDamage(damage);
+        Debug.Log(damage);
+
+        if (damage != null)
+            target.TakeDamage(damage);
     }
 
     public void TakeDamage(Damage damage)
     {
+        if (CombatStatus.IsDead || isInvulnerable)
+            return;
+        
         long finalDamage = combatStatus.ApplyDamage(damage);
+        
+        DamageTextManager.Instance.ShowDamage(finalDamage, Color.red, transform, 2f);
 
         Debug.Log($"Player took {finalDamage} damage. HP: {combatStatus.CurrentHp}");
 
@@ -116,11 +160,38 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     private void Die()
     {
         Debug.Log("Player Died");
+        
         // 사망 처리
+        animator.SetTrigger("death");
+        --CombatStatus.life;
+
+        StartCoroutine(TryReviveProgress());
+    }
+
+    private IEnumerator TryReviveProgress()
+    {
+        yield return new WaitForSeconds(3f);
+        if (CombatStatus.life > 0)
+        {
+            animator.SetTrigger("revive");
+            isInvulnerable = true;
+            combatStatus.CurrentHp = combatStatus.MaxHp;
+            yield return new WaitForSeconds(invulnerabilityTime);
+            animator.SetTrigger("onVulnerable");
+            isInvulnerable = false;
+        }
+        else
+        {
+            //GameOver
+            OnGameOver?.Invoke();
+        }
     }
     
     public void Move(Vector2 direction)
     {
+        if (CombatStatus.IsDead)
+            return;
+        
         bool touchingWall = IsTouchingWall();
         float wallDirX = Mathf.Sign(transform.localScale.x); // 벽 체크 방향과 같음 (보통 오른쪽 = +1, 왼쪽 = -1)
 
@@ -130,6 +201,8 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
             // 벽 방향 이동 차단, 반대 방향 이동은 허용
             direction.x = 0;
         }
+
+        float moveSpeed = baseMoveSpeed * (0.9f + combatStatus.baseStats[(int)BaseStatType.AGI] * 0.1f);
 
         playerRigidbody.velocity = new Vector2(direction.x * moveSpeed, playerRigidbody.velocity.y);
 
@@ -146,6 +219,9 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 
     public void Jump()
     {
+        if (CombatStatus.IsDead)
+            return;
+        
         if (isGrounded || jumpCount < maxAdditionalJumps)
         {
             playerRigidbody.velocity = new Vector2(playerRigidbody.velocity.x, jumpForce);
@@ -156,6 +232,9 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 
     public void EquipWeapon(Weapon weapon)
     {
+        if (CombatStatus.IsDead)
+            return;
+        
         foreach(Transform weaponTransform in WeaponTransform)
         {
             Destroy(weaponTransform.gameObject);
@@ -169,6 +248,8 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
         currentWeapon = _weapon;
         
         weaponInstance.transform.localScale *= weapon.ScaleModifier;
-        weaponInstance.GetComponent<SpriteRenderer>().sprite = weapon.Sprite;
+        SpriteRenderer spriteRenderer = weaponInstance.GetComponent<SpriteRenderer>();
+        if(spriteRenderer != null)
+            spriteRenderer.sprite = weapon.Sprite;
     }
 }

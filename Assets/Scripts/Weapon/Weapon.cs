@@ -20,11 +20,14 @@ public abstract class Weapon : ScriptableObject, IEquippable
     [field: SerializeField]
     public long BaseDamage { get; protected set; }
 
+    [field: SerializeField] public float KnockbackIntensity { get; protected set; } = 0.0f;
+    [field: SerializeField] public float KnockbackDuration { get; protected set; } = 0.0f;
+    [field: SerializeField] public float ParalyzeDuration { get; protected set; } = 0.0f;
+
     [field: SerializeField] public float ScaleModifier { get; protected set; } = 1.0f;
+    [field: SerializeField] public DamageType DamageType { get; protected set; }
     
     protected float lastAttackTime;
-    
-    public abstract DamageType GetDamageType();
 
     public void Init(Player _player)
     {
@@ -45,7 +48,9 @@ public abstract class Weapon : ScriptableObject, IEquippable
     
     public virtual void OnHitDamageable(IDamageable damageable)
     {
-        damageable.TakeDamage(player.RollAttack(this));
+        Damage damage = player.RollAttack(this);
+        if(damage != null)
+            damageable.TakeDamage(damage);
     }
 
     protected abstract void Attack();

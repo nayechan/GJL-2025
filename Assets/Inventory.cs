@@ -5,13 +5,13 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class Quickslot : MonoBehaviour
+public class Inventory : MonoBehaviour
 {
     private bool isSwitchCooldown = false;
     
     [SerializeField] private Player player;
     
-    [SerializeField] private ScriptableObject[] equipQuickslots;
+    [SerializeField] private ScriptableObject[] inventorySlots;
     [SerializeField] private Image[] equipImages;
 
     [SerializeField] private float switchDelay = 1.0f;
@@ -22,22 +22,22 @@ public class Quickslot : MonoBehaviour
         KeyCode[] keyCodes =
         {
             KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, 
-            KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8
+            KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.V
         };
 
         for (int i = 0; i < keyCodes.Length; ++i)
         {
             if(Input.GetKeyDown(keyCodes[i]))
-                EquipQuickslot(i);
+                UseItemInSlot(i);
         } 
     }
 
     private void Start()
     {
-        for (int slot = 0; slot < equipQuickslots.Length; ++slot)
+        for (int slot = 0; slot < inventorySlots.Length; ++slot)
         {
 
-            IEquippable equippable = (IEquippable)equipQuickslots[slot];
+            IEquippable equippable = (IEquippable)inventorySlots[slot];
             if (equippable != null)
             {
                 equipImages[slot].sprite = equippable.Sprite;
@@ -50,11 +50,11 @@ public class Quickslot : MonoBehaviour
         }
     }
 
-    void EquipQuickslot(int slot)
+    public void UseItemInSlot(int slot)
     {
         if (isSwitchCooldown) return;
         
-        IEquippable equippable = (IEquippable)equipQuickslots[slot];
+        IEquippable equippable = (IEquippable)inventorySlots[slot];
         if (equippable != null)
         {
             equippable.OnUse(player);

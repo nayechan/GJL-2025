@@ -29,6 +29,9 @@ public class AttackEffect : MonoBehaviour
             Debug.LogError("Weapon is null");
             return;
         }
+
+        if (other.tag == "Player")
+            return;
         
         if (other.TryGetComponent<IDamageable>(out IDamageable damageable)
             && !hitTargets.Contains(damageable))

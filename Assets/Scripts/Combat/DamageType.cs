@@ -2,8 +2,14 @@
 {
     Physical,
     Magical,
-    True,     // 방어력 무시
-    Poison,
-    Fire,
-    Ice
+    Ranged
+}
+
+public static class DamageUtility
+{
+    public static float GetEffectiveDamage(DamageType damageType)
+    {
+        float[] effectiveDamage = { 1.0f, 0.5f, 0.7f };
+        return effectiveDamage[(int)damageType];
+    }
 }

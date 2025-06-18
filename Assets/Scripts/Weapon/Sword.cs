@@ -17,8 +17,6 @@ public class Sword : Weapon
         attackEffect.Init(this);
     }
 
-    public override DamageType GetDamageType() => DamageType.Physical;
-
     public override void OnUse(Player _player)
     {
         _player.EquipWeapon(this);

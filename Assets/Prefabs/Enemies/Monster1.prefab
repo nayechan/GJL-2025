@@ -104,8 +104,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   combatStatus:
     level: 1
-    attackPower: 10
-    defense: 2
+    baseStats: 050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    life: 1
+    maxLife: 1
   attackDelay: 1
   moveSpeed: 3
   knockBackIntensity: 4

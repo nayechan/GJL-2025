@@ -10,7 +10,7 @@ public class PlayerExpBar : MonoBehaviour
     private void Start()
     {
         PlayerStatus playerStatus = player.PlayerStatus;
-        playerStatus.OnExpChanged += Refresh;
+        playerStatus.OnExpChanged.AddListener(Refresh);
         Refresh();
     }
 
@@ -19,7 +19,7 @@ public class PlayerExpBar : MonoBehaviour
         PlayerStatus playerStatus = player.PlayerStatus;
         image.fillAmount = playerStatus.ExpRatio;
         levelText.text = $"Lv. {playerStatus.Level:N0}";
-        expText.text = $"★ {playerStatus.CurrentExp:N0}/{playerStatus.MaxExp:N0}";
+        expText.text = $"★ {playerStatus.CurrentExp:N0} / {playerStatus.MaxExp:N0}";
     }
         
 }

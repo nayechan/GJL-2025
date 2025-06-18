@@ -8,17 +8,16 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     [SerializeField] private CombatStatus combatStatus;
     [SerializeField] private float attackDelay = 0.5f;
     [SerializeField] private float moveSpeed = 3f;
-    [SerializeField] private float knockBackIntensity = 5.0f; // 넉백 강도
-    [SerializeField] private float knockbackDuration = 0.3f; // 넉백 지속 시간
     [SerializeField] private float dragCoefficient = 5f; // 자연스러운 감속을 위한 드래그
     
     [SerializeField] private Transform followTarget;
 
     private bool isCooldown = false;
+    private bool isParalyzed = false;
     private bool isKnockedBack = false; // 넉백 상태 플래그
     private Vector2 direction;
     private Rigidbody2D rb;
-    private Coroutine knockbackCoroutine;
+    private Coroutine knockbackCoroutine, paralyzeCoroutine;
 
     public CombatStatus CombatStatus => combatStatus;
 
@@ -30,17 +29,12 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     private void Start()
     {
         followTarget = GameObject.FindGameObjectWithTag("Player").transform;
-        combatStatus.Init(level => 5 * (level + 1));
+        combatStatus.Init();
     }
 
     private void Update()
     {
-        CalculateKnockback();
-    }
-
-    public void CalculateKnockback()
-    {
-        if (followTarget == null || isKnockedBack) return;
+        if (followTarget == null || isKnockedBack || isParalyzed) return;
 
         // 방향 벡터 계산
         direction = (followTarget.position - transform.position).normalized;
@@ -57,11 +51,10 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
             transform.localScale = scale;
         }
     }
-
     public Damage RollAttack()
     {
         // 간단하게 공격력 그대로 데미지 생성, 확장 가능
-        return new Damage(combatStatus.attackPower, this, DamageType.Physical);
+        return new Damage(combatStatus.baseStats[(int)BaseStatType.STR], this, DamageType.Physical);
     }
 
     // IAttacker 구현
@@ -79,8 +72,13 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     {
         long finalDamage = combatStatus.ApplyDamage(damage);
         
-        // 넉백 처리
-        ApplyKnockback(-direction);
+        if(damage.KnockbackDuration > 0)
+            ApplyKnockback(-direction, damage.KnockbackDuration, damage.KnockbackIntensity);
+        
+        if(damage.ParalyzeDuration > 0)
+            ApplyParalyze(damage.ParalyzeDuration);
+        
+        DamageTextManager.Instance.ShowDamage(finalDamage, Color.white, transform, 1f);
 
         Debug.Log($"Enemy took {finalDamage} damage. HP: {combatStatus.CurrentHp}");
 
@@ -90,35 +88,68 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
             {
                 Player player = (Player)damage.Source;
                 player.PlayerStatus.GainExp(combatStatus.level * 5);
+                player.PlayerStatus.GainGold(combatStatus.level + 4);
             }
             Die();
         }
     }
 
-    private void ApplyKnockback(Vector2 knockbackDirection)
+    private void ApplyKnockback(Vector2 knockbackDirection, float knockbackDuration, float knockbackIntensity)
     {
+        Debug.Log(knockbackIntensity);
+        Debug.Log(knockbackDirection);
+        
         // 기존 넉백 코루틴이 있다면 중단
         if (knockbackCoroutine != null)
-        {
             StopCoroutine(knockbackCoroutine);
-        }
-        
-        // 넉백 적용
-        rb.AddForce(knockbackDirection * knockBackIntensity, ForceMode2D.Impulse);
-        
+
         // 넉백 상태 관리 코루틴 시작
-        knockbackCoroutine = StartCoroutine(KnockbackCoroutine());
+        knockbackCoroutine = StartCoroutine(
+            KnockbackCoroutine(knockbackDirection, knockbackDuration, knockbackIntensity));
     }
 
-    private IEnumerator KnockbackCoroutine()
+    private void ApplyParalyze(float paralyzeDuration)
+    {
+        if(paralyzeCoroutine != null)
+            StopCoroutine(paralyzeCoroutine);
+        
+        rb.velocity = Vector2.zero;
+        
+        paralyzeCoroutine = StartCoroutine(ParalyzeCoroutine(paralyzeDuration));
+    }
+
+    private IEnumerator KnockbackCoroutine(
+        Vector2 knockbackDirection, float knockbackDuration, float knockbackIntensity)
     {
         isKnockedBack = true;
         
         // 넉백 지속 시간 대기
-        yield return new WaitForSeconds(knockbackDuration);
+        float time = knockbackDuration;
+
+        while (time > 0f)
+        {
+            float effectiveKnockbackIntensity = knockbackIntensity * (time / knockbackDuration);
+            // 넉백 적용
+            transform.Translate(effectiveKnockbackIntensity * Time.deltaTime * knockbackDirection);
+            
+            time -= Time.deltaTime;
+            yield return null;
+        }
         
         isKnockedBack = false;
         knockbackCoroutine = null;
+    }
+
+    private IEnumerator ParalyzeCoroutine(float paralyzeDuration)
+    {
+        isParalyzed = true;
+        rb.isKinematic = true;
+
+        yield return new WaitForSeconds(paralyzeDuration);
+        
+        isParalyzed = false;
+        rb.isKinematic = false;
+        paralyzeCoroutine = null;
     }
 
     private void Die()

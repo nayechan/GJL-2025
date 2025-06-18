@@ -18,6 +18,7 @@ public class PlayerHpBar : MonoBehaviour
     private void Refresh()
     {
         image.fillAmount = player.CombatStatus.HPRatio;
-        text.text = $"{new string('♥', player.CombatStatus.life)} {player.CombatStatus.HPRatio:P1}";
+        text.text = $"{new string('♥', player.CombatStatus.life)}";
+        text.text += $" {player.CombatStatus.CurrentHp} / {player.CombatStatus.MaxHp}";
     }
 }

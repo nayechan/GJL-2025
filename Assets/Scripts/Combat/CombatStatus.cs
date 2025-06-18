@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [System.Serializable]
 public class CombatStatus
@@ -8,8 +9,7 @@ public class CombatStatus
     
     public long level = 1;
 
-    public long attackPower = 10;
-    public long defense = 2;
+    public long[] baseStats = new long[(int)BaseStatType.LENGTH];
 
     private long currentHp;
     public long CurrentHp
@@ -25,7 +25,8 @@ public class CombatStatus
         }
     }
 
-    public Func<long, long> GetMaxHp;
+    public int baseMaxHp = 10;
+    public long MaxHp => (baseStats[(int)BaseStatType.VIT] + 1) * baseMaxHp;
 
     public int life = 1;
     public int maxLife = 1;
@@ -39,10 +40,10 @@ public class CombatStatus
     public long ApplyDamage(Damage damage)
     {
         long rawDamage = damage.Amount;
-        long reducedDamage = Math.Max(0, rawDamage - defense);
-        CurrentHp = Math.Max(0, currentHp - reducedDamage);
+        
+        CurrentHp = Math.Max(0, currentHp - rawDamage);
 
-        return reducedDamage;
+        return rawDamage;
     }
 
     /// <summary>
@@ -50,23 +51,27 @@ public class CombatStatus
     /// </summary>
     public void Heal(long amount)
     {
-        CurrentHp = Math.Min(GetMaxHp(level), currentHp + amount);
+        CurrentHp = Math.Min(MaxHp, currentHp + amount);
     }
 
     public void CompleteHeal()
     {
-        CurrentHp = GetMaxHp(level);
+        CurrentHp = MaxHp;
     }
     
-    public virtual void Init(Func<long, long> _MaxHp)
+    public void Init()
     {
-        GetMaxHp = _MaxHp;
-        currentHp = GetMaxHp(level);
+        currentHp = MaxHp;
         OnHpChanged?.Invoke();
     }
 
     /// <summary>
     /// 현재 체력을 퍼센트로 반환합니다.
     /// </summary>
-    public float HPRatio => GetMaxHp(level) > 0 ? (float)currentHp / GetMaxHp(level) : 0f;
+    public float HPRatio => MaxHp > 0 ? (float)currentHp / MaxHp : 0f;
+
+    public void RefreshStat()
+    {
+        OnHpChanged?.Invoke();
+    }
 }

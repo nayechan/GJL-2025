@@ -8,7 +8,6 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     [SerializeField] private CombatStatus combatStatus;
     [SerializeField] private float attackDelay = 0.5f;
     [SerializeField] private float moveSpeed = 3f;
-    [SerializeField] private float dragCoefficient = 5f; // 자연스러운 감속을 위한 드래그
     
     [SerializeField] private Transform followTarget;
 

@@ -1,13 +1,21 @@
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
     public bool IsGamePaused { get; private set; }
+    public int CurrentFloor { get; private set; }
+
+    public UnityEvent onPause, onResume;
 
     private void Awake()
     {
+        onPause = new UnityEvent();
+        onResume = new UnityEvent();
+        
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -20,28 +28,50 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         IsGamePaused = false;
-        Debug.Log("Game Started");
-        // 게임 시작 초기화 코드
+        CurrentFloor = 1;
+        SaveProgress();
+        SceneManager.LoadScene("InGame");
+    }
+    
+    public void ContinueGame()
+    {
+        IsGamePaused = false;
+        CurrentFloor = PlayerPrefs.GetInt("CurrentFloor", 1);
+        SceneManager.LoadScene("InGame");
     }
 
     public void PauseGame()
     {
         IsGamePaused = true;
         Time.timeScale = 0f;
-        Debug.Log("Game Paused");
+        onPause?.Invoke();
     }
 
     public void ResumeGame()
     {
         IsGamePaused = false;
         Time.timeScale = 1f;
-        Debug.Log("Game Resumed");
+        onResume?.Invoke();
     }
 
     public void EndGame()
     {
-        IsGamePaused = true;
-        Debug.Log("Game Ended");
-        // 게임 종료 처리
+        SaveProgress();
+        IsGamePaused = false;
+        SceneManager.LoadScene("Title");
+    }
+
+    public void ClearFloor()
+    {
+        ++CurrentFloor;
+        SaveProgress();
+        SceneManager.LoadScene("InGame");
+        IsGamePaused = false;
+    }
+
+    public void SaveProgress()
+    {
+        PlayerPrefs.SetInt("CurrentFloor", CurrentFloor);
+        PlayerPrefs.Save();
     }
 }

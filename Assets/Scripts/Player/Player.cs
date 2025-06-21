@@ -19,7 +19,8 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     [SerializeField] private LayerMask groundLayer;
 
     [SerializeField] private LayerMask wallLayer;
-    [SerializeField] private float wallCheckDistance = 0.1f;
+    [SerializeField] private float wallCheckDistance = 0.1f, wallCheckHeight = 1.5f;
+    [SerializeField] private float wallCheckYOffset = 0.05f;
     [SerializeField] private Transform wallCheckPoint;
 
     [SerializeField] private Weapon currentWeapon;
@@ -45,7 +46,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 
     public UnityEvent OnGameOver { get; private set; }
 
-private void Awake()
+    private void Awake()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
@@ -57,6 +58,11 @@ private void Awake()
         inventory.UseItemInSlot(0);
     }
 
+    private void Start()
+    {
+        GameManager.Instance.onPause.AddListener(() => { enabled = false;});
+        GameManager.Instance.onResume.AddListener(() => { enabled = true; });
+    }
 
     private void Update()
     {
@@ -88,8 +94,8 @@ private void Awake()
     
     private bool IsTouchingWall()
     {
-        Vector2 boxCenter = wallCheckPoint.position;
-        Vector2 boxSize = new Vector2(wallCheckDistance, 1.5f); // 높이 1.6f, 너비는 wallCheckDistance
+        Vector2 boxCenter = wallCheckPoint.position + Vector3.up * wallCheckYOffset;
+        Vector2 boxSize = new Vector2(wallCheckDistance, wallCheckHeight);
         Collider2D hit = Physics2D.OverlapBox(boxCenter, boxSize, 0f, wallLayer);
         return hit != null;
     }

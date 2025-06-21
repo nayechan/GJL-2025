@@ -6,12 +6,11 @@ using UnityEngine;
 public class ShurikenShooter : Weapon
 {
     [SerializeField] private GameObject shurikenInstancePrefab;
-    private const float yOffset = 1.0f;
 
     protected override void Attack()
     {
-        Vector2 baseDirection = (Camera.main.ScreenToWorldPoint(Input.mousePosition) 
-                             - player.WeaponTransform.position - yOffset * Vector3.up);
+        Vector2 baseDirection = (Camera.main.ScreenToWorldPoint(Input.mousePosition)
+                                 - player.WeaponTransform.position);
         baseDirection.Normalize();
 
 

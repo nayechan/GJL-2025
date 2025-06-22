@@ -36,7 +36,7 @@ This project is developed using **Unity 2022 LTS**.
 > ⚠️ Note: This project uses a private Git submodule under `Assets/ThirdParties/`, which is **not included** in the public repository. Please contact the development team if you require access.
 
 To run the project locally:
-1. Open in Unity 2022 LTS or later.
+1. Open in Unity 2022.3.26f1 or later.
 2. Remove or stub missing dependencies under `Assets/ThirdParties/` if needed.
 3. Open the main scene and press Play.
 

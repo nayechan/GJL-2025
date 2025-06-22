@@ -3,13 +3,15 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class Enemy : MonoBehaviour, IAttacker, IDamageable
+public class Enemy : IEnemy, IAttacker, IDamageable
 {
     [SerializeField] private CombatStatus combatStatus;
     [SerializeField] private float attackDelay = 0.5f;
     [SerializeField] private float moveSpeed = 3f;
     
     [SerializeField] private Transform followTarget;
+
+    [SerializeField] private AudioClip onHitSound;
 
     private bool isCooldown = false;
     private bool isParalyzed = false;
@@ -28,7 +30,16 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
     private void Start()
     {
         followTarget = GameObject.FindGameObjectWithTag("Player").transform;
-        combatStatus.Init();
+        combatStatus.Init(CalculateLevel(), GameManager.Instance.IsKarmaOverflown);
+
+        combatStatus.CurrentHp = GetMaxHp();
+    }
+
+    private long GetMaxHp()
+    {
+        float vit = combatStatus.CalculateFinalStat(BaseStatType.VIT, null);
+        
+        return Mathf.RoundToInt(5 * vit + 5);
     }
 
     private void Update()
@@ -39,7 +50,7 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
         direction = (followTarget.position - transform.position).normalized;
         
         // velocity를 사용한 부드러운 이동
-        Vector2 targetVelocity = direction * moveSpeed;
+        Vector2 targetVelocity = direction * moveSpeed * (1 + CombatStatus.baseStats[(int)BaseStatType.AGI] / 10.0f);
         rb.velocity = Vector2.Lerp(rb.velocity, targetVelocity, Time.deltaTime * 8f);
         
         // 방향에 따라 스케일 조절 (X축만)
@@ -50,15 +61,27 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
             transform.localScale = scale;
         }
     }
+
+    public int CalculateLevel()
+    {
+        int floor = StageManager.Instance.CurrentFloor;
+        float karmaWeight = GameManager.Instance.KarmaGauge / 100.0f;
+        
+        return Mathf.RoundToInt(UnityEngine.Random.Range(floor, floor+2) * (1+karmaWeight/10.0f));
+    }
+
     public Damage RollAttack()
     {
         // 간단하게 공격력 그대로 데미지 생성, 확장 가능
-        return new Damage(combatStatus.baseStats[(int)BaseStatType.STR], this, DamageType.Physical);
+        return new Damage(combatStatus.baseStats[(int)BaseStatType.STR], this, DamageType.Physical, false);
     }
 
     // IAttacker 구현
     public void Attack(IDamageable target)
     {
+        if (CombatStatus.IsDead)
+            return;
+        
         Damage damage = RollAttack();
 
         Debug.Log($"Enemy dealt {damage.Amount} damage. HP: {combatStatus.CurrentHp}");
@@ -77,17 +100,18 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
         if(damage.ParalyzeDuration > 0)
             ApplyParalyze(damage.ParalyzeDuration);
         
-        DamageTextManager.Instance.ShowDamage(finalDamage, Color.white, transform, 1f);
+        DamageTextManager.Instance.ShowDamage(finalDamage, damage.IsCritical, Color.white, transform, 1f);
 
         Debug.Log($"Enemy took {finalDamage} damage. HP: {combatStatus.CurrentHp}");
+        //AudioManager.Instance.PlaySFX(onHitSound);
 
         if (combatStatus.IsDead)
         {
             if (damage.Source.GetType() == typeof(Player))
             {
                 Player player = (Player)damage.Source;
-                player.PlayerStatus.GainExp(combatStatus.level * 5);
-                player.PlayerStatus.GainGold(combatStatus.level + 4);
+                player.PlayerStatus.GainExp(3 + combatStatus.level * 4);
+                player.PlayerStatus.GainGold(2 + combatStatus.level * 3);
             }
             Die();
         }
@@ -149,13 +173,6 @@ public class Enemy : MonoBehaviour, IAttacker, IDamageable
         isParalyzed = false;
         rb.isKinematic = false;
         paralyzeCoroutine = null;
-    }
-
-    private void Die()
-    {
-        Debug.Log("Enemy Died");
-        // 사망 처리 (사망 애니메이션, 제거, 보상 등)
-        Destroy(gameObject);
     }
 
     private IEnumerator ResetCooldown()

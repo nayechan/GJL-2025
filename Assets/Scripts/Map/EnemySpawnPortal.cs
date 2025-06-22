@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -49,6 +48,7 @@ public class EnemySpawnPortal : MonoBehaviour
     public IEnumerator Spawn()
     {
         Vector2 randomness = Random.insideUnitCircle * maxRadius;
-        yield return InstantiateAsync(enemyGameObj, transform.position + (Vector3)randomness, Quaternion.identity);
+        yield return InstantiateAsync(
+            enemyGameObj, transform.position + (Vector3)randomness, Quaternion.identity);
     }
 }

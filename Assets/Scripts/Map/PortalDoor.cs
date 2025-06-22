@@ -6,12 +6,10 @@ using UnityEngine;
 public class PortalDoor : MonoBehaviour
 {
     [SerializeField] private GameObject lockedDoor, unlockedDoor;
-    private Window floorClearWindow;
     private bool isTriggered = false;
 
     private void Start()
     {
-        floorClearWindow = WindowManager.Instance.GetWindow("FloorClearWindow");
     }
 
     public void Activate()
@@ -26,7 +24,6 @@ public class PortalDoor : MonoBehaviour
         
         isTriggered = true;
         
-        GameManager.Instance.PauseGame();
-        floorClearWindow.Open();
+        StageManager.Instance.ClearFloor();
     }
 }

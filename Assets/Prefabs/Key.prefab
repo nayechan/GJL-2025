@@ -197,3 +197,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a01e6971448c836479e782ac49329001, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gainKeySound: {fileID: 8300000, guid: cc16f1f0712f16441933c45381499d8a, type: 3}

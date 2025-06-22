@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Monster1
       objectReference: {fileID: 0}
+    - target: {fileID: -2253911629886400664, guid: 57d56f1b25ce7ae4ebf4ef2728ccd352, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 1160356261127867848, guid: 57d56f1b25ce7ae4ebf4ef2728ccd352, type: 3}
       propertyPath: m_Controller
       value: 
@@ -104,15 +108,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   combatStatus:
     level: 1
-    baseStats: 050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    baseStats: 030000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000
     life: 1
     maxLife: 1
   attackDelay: 1
-  moveSpeed: 3
-  knockBackIntensity: 4
-  knockbackDuration: 0.4
-  dragCoefficient: 5
+  moveSpeed: 2
   followTarget: {fileID: 0}
+  onHitSound: {fileID: 8300000, guid: e21075a14c7f0704ba92cd6d37700d70, type: 3}
 --- !u!70 &2507695736597343269
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

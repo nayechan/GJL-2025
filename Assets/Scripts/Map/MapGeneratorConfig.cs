@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 
 [Serializable]
@@ -7,9 +8,15 @@ using UnityEngine.Tilemaps;
 public class MapGeneratorConfig : ScriptableObject
 {
     [SerializeField] public int minFloor, maxFloor;
+
+    [SerializeField] public Sprite bgSprite;
     
     [SerializeField] public GameObject[] chunkPrefabs;
     [SerializeField] public GameObject fallbackChunkPrefab, beginChunkPrefab, exitChunkPrefab, keyPrefab;
+    [SerializeField] public Vector2Int exitChunkDoorPos = new Vector2Int(8, 5);
+    
+    [SerializeField] public GameObject bossEnemyPrefab;
+    [SerializeField] public Vector2Int bossEnemyPos = new Vector2Int(17, 5);
 
     [SerializeField] public TileBase blockTile, obstacleTile;
     [SerializeField] public TileBase targetBlockTile, targetObstacleTile;
@@ -23,5 +30,4 @@ public class MapGeneratorConfig : ScriptableObject
     [SerializeField] public int beginChunkWidth = 2, endChunkWidth = 2;
     
     [SerializeField] public GameObject unlockedDoorPortalPrefab;
-    [SerializeField] public Vector2Int endChunkDoorPos = new Vector2Int(8, 5);
 }

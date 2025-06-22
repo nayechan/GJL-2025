@@ -31,20 +31,46 @@ public class PortalGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(GeneratePortal());
+        StartCoroutine(GeneratePortalProgress());
+    }
+
+    private void Update()
+    {
+        currentEnemyCount += Time.deltaTime * enemyIncreaseRate;
+    }
+
+    int GetMaxPortalCount()
+    {
+        int chunkCount = mapGenerator.CurrentConfig.height * mapGenerator.CurrentConfig.width;
+        float maxPortalCount = maxPortalCountPerChunks * chunkCount;
+
+        maxPortalCount *= (1 + GameManager.Instance.KarmaGauge / 100.0f);
+
+        if (GameManager.Instance.IsKarmaOverflown)
+            maxPortalCount *= 1.5f;
+        
+        return Mathf.RoundToInt(maxPortalCount);
+    }
+
+    int GetMaxEnemyCount()
+    {
+        float karmaGauge = GameManager.Instance.KarmaGauge / 100.0f;
+        return Mathf.RoundToInt(currentEnemyCount + karmaGauge * 5);
     }
     
-    IEnumerator GeneratePortal()
+    IEnumerator GeneratePortalProgress()
     {
         yield return new WaitUntil(()=>mapGenerator.CurrentConfig!=null);
         int width = mapGenerator.CurrentConfig.width * mapGenerator.CurrentConfig.chunkSize.x;
         int height = mapGenerator.CurrentConfig.height * mapGenerator.CurrentConfig.chunkSize.y;
 
         int chunkCount = mapGenerator.CurrentConfig.height * mapGenerator.CurrentConfig.width;
+
+        int currentFloor = GameManager.Instance.CurrentFloor;
         
         while (true)
         {
-            if (portals.Count < maxPortalCountPerChunks * chunkCount)
+            if (portals.Count < GetMaxPortalCount())
             {
                 int x, y;
                 
@@ -60,13 +86,11 @@ public class PortalGenerator : MonoBehaviour
                 
                 EnemySpawnPortal portal = Instantiate(portalPrefab, new Vector3(x + 0.5f, y + 0.5f, 0),
                     Quaternion.identity).GetComponent<EnemySpawnPortal>();
-                portal.MaxCount = Mathf.RoundToInt(currentEnemyCount);
+                portal.MaxCount = GetMaxEnemyCount();
 
                 portals.Add(portal);
                 portal.onDestroy.AddListener(() => portals.Remove(portal));
             }
-
-            currentEnemyCount += Time.deltaTime * enemyIncreaseRate;
             yield return new WaitForSeconds(portalGenerationDelay);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -6,19 +7,29 @@ using UnityEngine.UI;
 
 public class PlayerHpBar : MonoBehaviour
 {
-    [SerializeField] private Player player;
+    private Player player;
     [SerializeField] private Image image;
     [SerializeField] private TMP_Text text;
-    private void Start()
+    IEnumerator Start()
     {
+        yield return new WaitUntil(()=>Player.Instance != null);
+        player = Player.Instance;
         player.CombatStatus.OnHpChanged += Refresh;
         Refresh();
     }
 
     private void Refresh()
     {
-        image.fillAmount = player.CombatStatus.HPRatio;
+        if (player == null) return;
+        
+        image.fillAmount = player.CombatStatus.GetHpRatio(player.GetMaxHp());
         text.text = $"{new string('♥', player.CombatStatus.life)}";
-        text.text += $" {player.CombatStatus.CurrentHp} / {player.CombatStatus.MaxHp}";
+        text.text += $" {player.CombatStatus.CurrentHp:N0} / {player.GetMaxHp():N0}";
+    }
+
+    private void OnDestroy()
+    {
+        if(player != null)
+            player.CombatStatus.OnHpChanged -= Refresh;
     }
 }

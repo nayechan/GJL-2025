@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   magicEffect: {fileID: 2285674644374642819, guid: 45c48ec19f5d03e45b7a70cdd41277f0, type: 3}
   duration: 0.5
+  sfx: {fileID: 8300000, guid: 07dddba087c9f014abef5134db771790, type: 3}
 --- !u!50 &-4062845195096230037
 Rigidbody2D:
   serializedVersion: 4

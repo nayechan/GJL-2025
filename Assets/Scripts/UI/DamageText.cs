@@ -10,13 +10,18 @@ public class DamageText : MonoBehaviour
 {
     private Transform target;
     private Vector3 targetPos;
-    public void Init(long amount, Color color, Transform _target, float yOffset)
+    public void Init(long amount, bool isCritical, Color color, Transform _target, float yOffset)
     {
         // 텍스트 설정 (TextMeshPro 기준)
         var text = GetComponent<TMP_Text>();
         if (text != null)
         {
-            text.text = amount.ToString();
+            if (!isCritical)
+                text.text = $"{amount:N0}";
+            
+            else
+                text.text = $"*{amount:N0}*";
+            
             text.color = color;
         }
         

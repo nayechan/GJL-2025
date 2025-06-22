@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6967515669950703217}
   m_Layer: 0
   m_Name: EnemySpawnPortal
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   portalGameObj: {fileID: 7445575182814114954}
   enemyGameObj: {fileID: 4909944299944591221, guid: 4b8c1d770f20b244890e45ac20904bde, type: 3}
-  count: 5
+  <MaxCount>k__BackingField: 0
   startDelay: 0.3
   delay: 0.1
   maxRadius: 1

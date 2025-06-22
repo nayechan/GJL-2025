@@ -7,22 +7,27 @@ using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour
 {
+    public static Inventory Instance { get; private set; }
+    
     private bool isSwitchCooldown = false;
     
-    [SerializeField] private Player player;
+    private Player player;
     
     [SerializeField] private ScriptableObject[] inventorySlots;
     [SerializeField] private Image[] equipImages;
 
-    [SerializeField] private float switchDelay = 1.0f;
+    [SerializeField] private float switchDelay = 0.5f;
+
+    private bool isInitialized = false;
 
     // Update is called once per frame
     void Update()
     {
+        if (!isInitialized) return;
+        
         KeyCode[] keyCodes =
         {
-            KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, 
-            KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.V
+            KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3
         };
 
         for (int i = 0; i < keyCodes.Length; ++i)
@@ -32,11 +37,26 @@ public class Inventory : MonoBehaviour
         } 
     }
 
-    private void Start()
+    private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        Instance = this;
+    }
+
+    IEnumerator Start()
+    {
+        yield return new WaitUntil(()=>Player.Instance != null);
+        isInitialized = true;
+        player = Player.Instance;
+        UseItemInSlot(0, true);
+        
         for (int slot = 0; slot < inventorySlots.Length; ++slot)
         {
-
             IEquippable equippable = (IEquippable)inventorySlots[slot];
             if (equippable != null)
             {
@@ -50,7 +70,7 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    public void UseItemInSlot(int slot)
+    public void UseItemInSlot(int slot, bool ignoreCooldown = false)
     {
         if (isSwitchCooldown) return;
         
@@ -60,8 +80,11 @@ public class Inventory : MonoBehaviour
             equippable.OnUse(player);
         }
 
-        isSwitchCooldown = true;
-        StartCoroutine(ResetSwitchCooldown());
+        if (!ignoreCooldown)
+        {
+            isSwitchCooldown = true;
+            StartCoroutine(ResetSwitchCooldown());
+        }
     }
 
     IEnumerator ResetSwitchCooldown()

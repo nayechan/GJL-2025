@@ -156,3 +156,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   duration: 0.6
+  sfx: {fileID: 8300000, guid: 20bab4f73ecc3da47a9ce0cebd2290b9, type: 3}

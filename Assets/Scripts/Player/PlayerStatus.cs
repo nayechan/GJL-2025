@@ -5,7 +5,7 @@ using UnityEngine.Events;
 [Serializable]
 public class PlayerStatus
 {
-    private CombatStatus combatStatus;
+    private Player player;
     
     [field: SerializeField]
     public UnityEvent OnExpChanged { get; private set; }
@@ -23,7 +23,7 @@ public class PlayerStatus
         set
         {
             ap = value;
-            combatStatus.RefreshStat();
+            player.CombatStatus.RefreshStat();
         } 
     }
     
@@ -51,7 +51,7 @@ public class PlayerStatus
     }
 
 
-    public long MaxExp => (long)(Mathf.Pow(combatStatus.level, 1.5f) * 20 + 20);
+    public long MaxExp => (long)(Mathf.Pow(player.CombatStatus.level, 1.3f) * 30 + 20);
     
     /// <summary>
     /// 경험치를 얻고, currentExp > MaxExp일때 레벨업합니다
@@ -75,11 +75,11 @@ public class PlayerStatus
         while (currentExp >= MaxExp)
         {
             currentExp -= MaxExp;
-            ++combatStatus.level;
+            ++player.CombatStatus.level;
         }
         Ap += GetAp(Level);
         OnLevelUp?.Invoke();
-        combatStatus.CompleteHeal();
+        player.CombatStatus.CurrentHp = player.GetMaxHp();
     }
 
     public long GetAp(long level)
@@ -91,13 +91,13 @@ public class PlayerStatus
         return 3;
     }       
     
-    public long Level => combatStatus.level;
+    public long Level => player.CombatStatus.level;
 
     public float ExpRatio => MaxExp > 0 ? (float)currentExp / MaxExp : 0f;
     
-    public void Init(CombatStatus _combatStatus)
+    public void Init(Player _player)
     {
-        combatStatus = _combatStatus;
+        player = _player;
         
         OnLevelUp.AddListener(()=>OnExpChanged?.Invoke());
     }

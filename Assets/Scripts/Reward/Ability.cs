@@ -11,26 +11,27 @@ public enum Ability
     LUK,
     
     SwordATK,
-    SwordCritical,
+    SwordCriticalRate,
     SwordCriticalDamage,
     SwordSize,
-    SwordCooltime,
+    SwordCooldown,
     SwordDrain,
     
     ShurikenATK,
-    ShurikenCritical,
+    ShurikenCriticalRate,
     ShurikenCriticalDamage,
     ShurikenCount,
     ShurikenPenetration,
     ShurikenDrain,
     
     WandATK,
-    WandCritical,
+    WandCriticalRate,
     WandCriticalDamage,
     WandMagicRadius,
-    WandMagicCooltime,
+    WandMagicCooldown,
     WandDrain,
     
     Magnet,
-    HPRecover
+    HPRecover,
+    HPPercentage
 }

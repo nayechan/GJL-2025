@@ -7,15 +7,17 @@ public class Shuriken : MonoBehaviour
     private ShurikenShooter shurikenShooter;
     private Vector3 direction;
 
-    [SerializeField] private int penetrationCount = 3;
+    private int penetrationCount = 3;
     
     [SerializeField] private float duration; // In seconds
     [SerializeField] private float speed = 20, rotateSpeed = 360;
     
-    public void Init(ShurikenShooter _shurikenShooter, Vector2 _direction)
+    public void Init(ShurikenShooter _shurikenShooter, Vector2 _direction, int _penetrationCount)
     {
         shurikenShooter = _shurikenShooter;
         direction = _direction;
+        penetrationCount = _penetrationCount;
+        
         Destroy(this.gameObject, duration);
     }
 

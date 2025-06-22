@@ -20,7 +20,7 @@ public class PlayerMovementController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            movable.Jump();
+            movable.RequestJump();
         }
     }
 }

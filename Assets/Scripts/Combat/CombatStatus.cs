@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -11,8 +12,8 @@ public class CombatStatus
 
     public long[] baseStats = new long[(int)BaseStatType.LENGTH];
 
-    private long currentHp;
-    public long CurrentHp
+    private float currentHp;
+    public float CurrentHp
     {
         get => currentHp;
         set
@@ -25,53 +26,76 @@ public class CombatStatus
         }
     }
 
-    public int baseMaxHp = 10;
-    public long MaxHp => (baseStats[(int)BaseStatType.VIT] + 1) * baseMaxHp;
-
     public int life = 1;
-    public int maxLife = 1;
+    public int maxLife = 3;
 
     public bool IsDead => currentHp <= 0;
-
-    /// <summary>
-    /// 데미지를 계산하고 체력을 감소시킵니다. 방어력이 적용된 최종 데미지를 출력합니다.
-    /// 방어력 적용 및 음수 방지 포함
-    /// </summary>
-    public long ApplyDamage(Damage damage)
-    {
-        long rawDamage = damage.Amount;
-        
-        CurrentHp = Math.Max(0, currentHp - rawDamage);
-
-        return rawDamage;
-    }
-
-    /// <summary>
-    /// 체력을 회복합니다.
-    /// </summary>
-    public void Heal(long amount)
-    {
-        CurrentHp = Math.Min(MaxHp, currentHp + amount);
-    }
-
-    public void CompleteHeal()
-    {
-        CurrentHp = MaxHp;
-    }
     
     public void Init()
     {
-        currentHp = MaxHp;
-        OnHpChanged?.Invoke();
+        RefreshStat();
+    }
+
+    public void Init(int _level, bool isOverflown = false)
+    {
+        level = _level;
+        
+        baseStats[(int)BaseStatType.STR] *= AdjustSTR(_level, baseStats[(int)BaseStatType.STR]);
+        baseStats[(int)BaseStatType.VIT] *= AdjustVIT(_level, baseStats[(int)BaseStatType.VIT]);
+        
+        if(isOverflown)
+            baseStats[(int)BaseStatType.AGI] += 10;
+
+        Init();
+    }
+
+    public long AdjustSTR(int _level, long value)
+    {
+        return Mathf.RoundToInt(0.5f * Mathf.Pow(_level, 1.4f) * value);
+    }
+
+    public long AdjustVIT(int _level, long value)
+    {
+        return Mathf.RoundToInt(0.5f * Mathf.Pow(_level, 1.5f) * value);
+    }
+
+    public float CalculateFinalStat(BaseStatType _baseStatType, List<IStatModifier> _modifiers = null)
+    {
+        float result = baseStats[(int)_baseStatType];
+
+        if (_modifiers == null)
+            return result;
+        
+        foreach (IStatModifier modifier in _modifiers)
+        {
+            if (modifier is BaseStatModifier)
+            {
+                BaseStatModifier baseStatModifier = (BaseStatModifier)modifier;
+                if(baseStatModifier.StatType == _baseStatType)
+                    result += baseStatModifier.Amount;
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
     /// 현재 체력을 퍼센트로 반환합니다.
     /// </summary>
-    public float HPRatio => MaxHp > 0 ? (float)currentHp / MaxHp : 0f;
+    public float GetHpRatio(long maxHp)
+    {
+        return maxHp > 0 ? (float)currentHp / maxHp : 0f;
+    }
 
     public void RefreshStat()
     {
         OnHpChanged?.Invoke();
+    }
+
+    public long ApplyDamage(Damage _damage)
+    {
+        CurrentHp -= _damage.Amount;
+        if(CurrentHp < 0) currentHp = 0;
+        return _damage.Amount;
     }
 }

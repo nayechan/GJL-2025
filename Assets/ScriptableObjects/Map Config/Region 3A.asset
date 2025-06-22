@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2a23bdd91764373befe1217600fcc48, type: 3}
+  m_Name: Region 3A
+  m_EditorClassIdentifier: 
+  minFloor: 15
+  maxFloor: 15
+  bgSprite: {fileID: 21300000, guid: 1d3e202bfa6ab7b47ae3fa5419a3fed0, type: 3}
+  chunkPrefabs:
+  - {fileID: 1429020835105228816, guid: 9499c3c8ffb59664babe12d9f5cdae81, type: 3}
+  - {fileID: 7019585879438109444, guid: 5710996a31d814f43bd8325739ae8c4e, type: 3}
+  - {fileID: 5427056748229408859, guid: adc57b3405e91b6438fc899a6dcecf80, type: 3}
+  - {fileID: 1612691006777262586, guid: a4cc7cd57be5fe24d8ff37fa3ba347fe, type: 3}
+  - {fileID: 5312049244793936025, guid: 368e546376f66cc44bf975c9d55c2727, type: 3}
+  - {fileID: 2183915031623343254, guid: 66845880de6dc874db1608df6479bfcb, type: 3}
+  - {fileID: 4691182093439830023, guid: 948661ca9299f3545a680ffe157414d6, type: 3}
+  - {fileID: 2432391945883949334, guid: 1eb781cd846579b4287d2cf2bb8f4e0b, type: 3}
+  - {fileID: 3370450200573231552, guid: 0ee7dfe3a7908334ba3b90173f07a745, type: 3}
+  - {fileID: 8436459193238263093, guid: 71065cd37d49c2c48a5150aad77874fd, type: 3}
+  - {fileID: 1055744337470502080, guid: ad9168b00824c9b45961a118d0cf6a7f, type: 3}
+  - {fileID: 7227321179450374499, guid: bc205beb70ede5940a60a6dfbd4a4b07, type: 3}
+  - {fileID: 4287969000939013888, guid: 02d7970256b222044ba74b04b3cf49b3, type: 3}
+  - {fileID: 2548981276678361435, guid: e4a9457d3b8933748bd129684d938e00, type: 3}
+  - {fileID: 2891230434920989461, guid: 2363927add2ab0b42bcf100dfe427bc9, type: 3}
+  - {fileID: 6857694476079518706, guid: 9c58734fc5f74634eb456784a42b0988, type: 3}
+  - {fileID: 2268098822328472130, guid: 236f794fb563d7f46963498cf8aa0023, type: 3}
+  - {fileID: 8542334237015816976, guid: 62a28873d6bc2c443997497c422c89b9, type: 3}
+  fallbackChunkPrefab: {fileID: 8542334237015816976, guid: 62a28873d6bc2c443997497c422c89b9, type: 3}
+  beginChunkPrefab: {fileID: 8542334237015816976, guid: 2018a2b669702a549a5842d4786e7de9, type: 3}
+  exitChunkPrefab: {fileID: 8542334237015816976, guid: 4cd5593f9a6205346bbe2ac35338d7a7, type: 3}
+  keyPrefab: {fileID: 5618182455393986224, guid: dd62aa5b40d6e0f4994255da7c1fd050, type: 3}
+  exitChunkDoorPos: {x: 17, y: 1}
+  bossEnemyPrefab: {fileID: 6437525818073542006, guid: 6b014d54c6dee4a4b84c78b59de28ea3, type: 3}
+  bossEnemyPos: {x: 18, y: 5}
+  blockTile: {fileID: 11400000, guid: 0816205b1e7bcb74aa114ce624692f9e, type: 2}
+  obstacleTile: {fileID: 11400000, guid: f565301367e72eb43acb86cc52ce686b, type: 2}
+  targetBlockTile: {fileID: 11400000, guid: 5b75f5dfcc48b154ea4ec38a4d673a97, type: 2}
+  targetObstacleTile: {fileID: 11400000, guid: f565301367e72eb43acb86cc52ce686b, type: 2}
+  chunkSize: {x: 9, y: 9}
+  width: 4
+  height: 10
+  beginChunkX: 1
+  endChunkX: 0
+  beginChunkWidth: 2
+  endChunkWidth: 4
+  unlockedDoorPortalPrefab: {fileID: 8542334237015816976, guid: bb0e7bc6b500db340aafda60708eb10c, type: 3}

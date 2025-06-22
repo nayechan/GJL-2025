@@ -7,6 +7,8 @@ public class Window : MonoBehaviour
     private Dictionary<string, object> values;
     [SerializeField] private bool shouldPause = false;
 
+    public bool IsOpen { get; set; } = false;
+
     private void Awake()
     {
         values = new Dictionary<string, object>();
@@ -30,6 +32,7 @@ public class Window : MonoBehaviour
     public void Open()
     {
         gameObject.SetActive(true);
+        IsOpen = true;
         if(shouldPause)
             GameManager.Instance.PauseGame();
     }
@@ -37,6 +40,7 @@ public class Window : MonoBehaviour
     public void Close()
     {
         gameObject.SetActive(false);
+        IsOpen = false;
         if(shouldPause)
             GameManager.Instance.ResumeGame();
     }

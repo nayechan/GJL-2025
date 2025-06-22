@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Localization Table_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 04a4367b98972ef41810df550763dba1, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 178238779392
+    m_Localized: STR (Strength)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626317943402496
+    m_Localized: AGI (Agility)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626321797967872
+    m_Localized: VIT (Vitality)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626324444573696
+    m_Localized: INT (Intelligence)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626340248711168
+    m_Localized: DEX (Dexiterity)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626345990713344
+    m_Localized: LUK (Luck)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3627013312868352
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3628724735700992
+    m_Localized: '{0} Points Left'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629177783447552
+    m_Localized: Go back to Main Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629182271352832
+    m_Localized: Stat Distribution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629842756792320
+    m_Localized: Play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629865368285184
+    m_Localized: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3630220168654848
+    m_Localized: Menu
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

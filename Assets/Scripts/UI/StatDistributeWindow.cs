@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.UI;
 
 
@@ -11,8 +13,6 @@ public class StatDistributeWindow : Window
     [SerializeField] private Button[] statButtons;
     [SerializeField] private TMP_Text[] statTextFields;
     [SerializeField] private TMP_Text apTextField;
-
-    [SerializeField] private Player player;
 
     private void OnEnable()
     {
@@ -34,6 +34,7 @@ public class StatDistributeWindow : Window
 
     private void AddStat(BaseStatType statType)
     {
+        Player player = Player.Instance;
         if (player.PlayerStatus.Ap > 0)
         {
             ++player.CombatStatus.baseStats[(int)statType];
@@ -44,6 +45,7 @@ public class StatDistributeWindow : Window
 
     private void Refresh()
     {
+        Player player = Player.Instance;
         long ap = player.PlayerStatus.Ap;
         
         for (int i = 0; i < (int)BaseStatType.LENGTH; i++)
@@ -52,6 +54,14 @@ public class StatDistributeWindow : Window
             statButtons[i].interactable = (ap > 0);
         }
 
-        apTextField.text = $"{player.PlayerStatus.Ap:N0} Points Left";
+        // Localization key: "APText" in "Localization Table"
+        // Example value in table: "{0} Points Left"
+        LocalizedString apTextString = new LocalizedString("Localization Table", "APText");
+        apTextString.Arguments = new object[] { ap.ToString("N0", CultureInfo.InvariantCulture) };
+
+        apTextString.StringChanged += (localizedText) =>
+        {
+            apTextField.text = localizedText;
+        };
     }
 }

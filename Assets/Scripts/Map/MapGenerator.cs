@@ -12,6 +12,7 @@ public class MapGenerator : MonoBehaviour
     [field: SerializeField] public int CurrentFloor { get; private set; } = 1;
     [SerializeField] private List<MapGeneratorConfig> config;
     
+    [SerializeField] private SpriteRenderer bgSpriteRenderer;
     [SerializeField] private Tilemap blockTilemap, propTilemap, obstacleTilemap;
 
     public MapGeneratorConfig CurrentConfig { get; private set; }
@@ -20,11 +21,6 @@ public class MapGenerator : MonoBehaviour
     private bool[,] visited;
     
     Dictionary<Vector2Int, HashSet<Vector2Int>> pathConnections;
-    
-    void Start()
-    {
-        GenerateMaze(CurrentFloor);
-    }
     
     TileBase[,] GetTiles(GameObject chunkPrefab)
     {
@@ -56,10 +52,12 @@ public class MapGenerator : MonoBehaviour
         return tiles;
     }
     
-    void GenerateMaze(int floor)
+    public void GenerateMap(int floor)
     {
         CurrentConfig = config.FirstOrDefault(_config => _config.minFloor <= floor && floor <= _config.maxFloor) 
-                        ?? config[0];
+                        ?? config[^1];
+        
+        bgSpriteRenderer.sprite = CurrentConfig.bgSprite;
         
         int width = CurrentConfig.width;
         int height = CurrentConfig.height;
@@ -82,13 +80,28 @@ public class MapGenerator : MonoBehaviour
             if (pos == endChunkPos)
             {
                 SetChunkToTilemap(pos, GetTiles(CurrentConfig.exitChunkPrefab));
-                Vector3 doorPos = new Vector3(
-                    pos.x * chunkSize.x + CurrentConfig.endChunkDoorPos.x,
-                    pos.y * chunkSize.y + CurrentConfig.endChunkDoorPos.y,
-                    0);
+
+                if (CurrentConfig.unlockedDoorPortalPrefab != null)
+                {
+                    Vector3 doorPos = new Vector3(
+                        pos.x * chunkSize.x + CurrentConfig.exitChunkDoorPos.x,
+                        pos.y * chunkSize.y + CurrentConfig.exitChunkDoorPos.y,
+                        0);
                 
-                GameObject unlockedDoorPortal = Instantiate(
-                    CurrentConfig.unlockedDoorPortalPrefab, doorPos, quaternion.identity, transform);
+                    GameObject unlockedDoorPortal = Instantiate(
+                        CurrentConfig.unlockedDoorPortalPrefab, doorPos, quaternion.identity, transform);
+                }
+
+                if (CurrentConfig.bossEnemyPrefab != null)
+                {
+                    Vector3 bossPos = new Vector3(
+                        pos.x * chunkSize.x + CurrentConfig.bossEnemyPos.x,
+                        pos.y * chunkSize.y + CurrentConfig.bossEnemyPos.y,
+                        0);
+                
+                    GameObject boss = Instantiate(
+                        CurrentConfig.bossEnemyPrefab, bossPos, quaternion.identity);
+                }
             }
             
             if (pos.y == beginChunkPos.y && beginChunkPos.x <= pos.x &&
@@ -123,6 +136,12 @@ public class MapGenerator : MonoBehaviour
             blockTilemap.SetTile(new Vector3Int(width * chunkSize.x - 1, y, 0), CurrentConfig.targetBlockTile);
         }
         
+        if(CurrentConfig.bossEnemyPrefab == null)
+            InstantiateKey(width, height, chunkSize);
+    }
+
+    void InstantiateKey(int width, int height, Vector2Int chunkSize)
+    {
         while (true)
         {
             int x = Random.Range(0, width * chunkSize.x);

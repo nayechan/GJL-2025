@@ -8,10 +8,13 @@ public class AttackEffect : MonoBehaviour
     private HashSet<IDamageable> hitTargets;
     
     [SerializeField] private float duration; // In seconds
+    [SerializeField] private AudioClip sfx;
+    
     public void Init(Weapon _weapon)
     {
         weapon = _weapon;
         hitTargets = new HashSet<IDamageable>();
+        AudioManager.Instance.PlaySFX(sfx);
         Destroy(this.gameObject, duration);
     }
     

@@ -18,10 +18,10 @@ public class DamageTextManager : MonoBehaviour
             Destroy(gameObject);
     }
 
-    public void ShowDamage(long amount, Color color, Transform target, float yOffset = 0f)
+    public void ShowDamage(long amount, bool isCritical, Color color, Transform target, float yOffset = 0f)
     {
         // 데미지 텍스트 생성
         GameObject damageTextObj = Instantiate(damageTextPrefab, damageTextContainer);
-        damageTextObj.GetComponent<DamageText>().Init(amount, color, target, yOffset);
+        damageTextObj.GetComponent<DamageText>().Init(amount, isCritical, color, target, yOffset);
     }
 }

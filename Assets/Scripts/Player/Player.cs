@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -12,7 +13,13 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     private float baseMoveSpeed = 5f;
 
     [SerializeField] private float jumpForce = 7f;
-    [SerializeField] private int maxAdditionalJumps = 1;
+    [SerializeField] private int maxJumpCount = 2;
+    
+    [SerializeField] private float coyoteTime = 0.05f;
+    private float lastGroundedTime;
+    private bool wasGrounded;
+    private bool jumpRequested = false;
+
 
     [SerializeField] private Transform groundCheckPoint;
     [SerializeField] private float groundCheckRadius = 0.1f;
@@ -24,20 +31,25 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     [SerializeField] private Transform wallCheckPoint;
 
     [SerializeField] private Weapon currentWeapon;
-    [SerializeField] private Inventory inventory;
+    private GameObject weaponInstance;
 
     [SerializeField] private int jumpCount = 0;
 
     [SerializeField] private CombatStatus combatStatus;
     [SerializeField] private PlayerStatus playerStatus;
-
-    [SerializeField] private bool isGrounded = true;
-
+    
     [SerializeField] private float invulnerabilityTime = 3.0f;
+
+    [SerializeField] public bool isGrounded = true;
+
 
     private Rigidbody2D playerRigidbody;
     private Animator animator;
     private bool isInvulnerable = false;
+    
+    private Inventory inventory;
+    public List<IStatModifier> StatModifiers { get; private set; }
+    private Dictionary<string, float> extraStats;
 
     [field: SerializeField] public Transform WeaponTransform { get; private set; }
 
@@ -45,28 +57,54 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
     public PlayerStatus PlayerStatus => playerStatus;
 
     public UnityEvent OnGameOver { get; private set; }
+    
+    public static Player Instance { get; private set; }
 
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        Instance = this;
+        DontDestroyOnLoad(this);
+        
         playerRigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         OnGameOver = new UnityEvent();
+        StatModifiers = new List<IStatModifier>();
+        extraStats = new Dictionary<string, float>();
         
         combatStatus.Init();
-        playerStatus.Init(combatStatus);
+        playerStatus.Init(this);
 
-        inventory.UseItemInSlot(0);
+        combatStatus.CurrentHp = GetMaxHp();
+
+        StartCoroutine(RegenerateHp());
     }
 
     private void Start()
     {
         GameManager.Instance.onPause.AddListener(() => { enabled = false;});
         GameManager.Instance.onResume.AddListener(() => { enabled = true; });
+        
+        inventory = Inventory.Instance;
+    }
+
+    private void FixedUpdate()
+    {
+        UpdateGroundedStatus();
+        if (jumpRequested)
+        {
+            TryJump();
+            jumpRequested = false;
+        }
     }
 
     private void Update()
     {
-        UpdateGroundedStatus();
         UpdateAnimator();
         
         if (CombatStatus.IsDead)
@@ -76,16 +114,39 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
             TryAttack();
     }
 
-    private void UpdateGroundedStatus()
+    private IEnumerator RegenerateHp()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, groundLayer);
-
-        if (isGrounded)
-            jumpCount = 0; // 점프 카운트 초기화
-
-        animator.SetBool("isGrounded", isGrounded);
+        while (true)
+        {
+            float regenerateAmount = GetExtraStat("HPRecover");
+            if (regenerateAmount > 0)
+                combatStatus.CurrentHp += regenerateAmount;
+            combatStatus.CurrentHp = Mathf.Clamp(combatStatus.CurrentHp, 0, GetMaxHp());
+            yield return new WaitForSeconds(1.0f);
+        }
     }
 
+    private void UpdateGroundedStatus()
+    {
+        bool currentlyGrounded = Physics2D.OverlapCircle(
+            groundCheckPoint.position, groundCheckRadius, groundLayer);
+        
+        if (currentlyGrounded && !wasGrounded)
+        {
+            // 실제로 공중에서 -> 착지한 순간
+            jumpCount = 0;
+        }
+        
+        if (currentlyGrounded)
+        {
+            lastGroundedTime = Time.time;
+        }
+
+        isGrounded = currentlyGrounded;
+        wasGrounded = currentlyGrounded;
+        
+        animator.SetBool("isGrounded", isGrounded);
+    }
     private void UpdateAnimator()
     {
         animator.SetFloat("speed", Mathf.Abs(playerRigidbody.velocity.x));
@@ -103,23 +164,30 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
 
     public Damage RollAttack(Weapon weapon = null)
     {
-        long str = combatStatus.baseStats[(int)BaseStatType.STR];
-        long _int = combatStatus.baseStats[(int)BaseStatType.INT];
-        long dex = combatStatus.baseStats[(int)BaseStatType.DEX];
+        float str = GetStat(BaseStatType.STR);
+        float _int = GetStat(BaseStatType.INT);
+        float dex = GetStat(BaseStatType.DEX);
         
         if(weapon == null)
-            return new Damage(str, this, DamageType.Physical);
+            return new Damage(Mathf.RoundToInt(str), this, DamageType.Physical, false);
 
-        long damage = weapon.BaseDamage;
+        float damage = weapon.GetFinalStat("ATK");
 
         if (weapon.DamageType == DamageType.Physical)
-            damage += (long)(str * DamageUtility.GetEffectiveDamage(weapon.DamageType));
+            damage *= (1 + str / 5.0f);
         else if (weapon.DamageType == DamageType.Magical)
-            damage += (long)(_int * DamageUtility.GetEffectiveDamage(weapon.DamageType));
+            damage *= (1 + _int / 5.0f);
         else if (weapon.DamageType == DamageType.Ranged)
-            damage += (long)(dex * DamageUtility.GetEffectiveDamage(weapon.DamageType));
+            damage *= (1 + dex / 5.0f);
+
+        float criticalRate = weapon.GetFinalStat("CriticalRate");
+        float criticalDamage = weapon.GetFinalStat("CriticalDamage");
         
-        return new Damage(damage, this, weapon.DamageType,
+        bool isCritical = Random.value < criticalRate;
+        if (isCritical)
+            damage *= (1 + criticalDamage);
+        
+        return new Damage(Mathf.RoundToInt(damage), this, weapon.DamageType, isCritical,
                 weapon.KnockbackDuration, weapon.KnockbackIntensity, weapon.ParalyzeDuration);
     }
 
@@ -155,7 +223,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
         
         long finalDamage = combatStatus.ApplyDamage(damage);
         
-        DamageTextManager.Instance.ShowDamage(finalDamage, Color.red, transform, 2f);
+        DamageTextManager.Instance.ShowDamage(finalDamage, damage.IsCritical, Color.red, transform, 2f);
 
         Debug.Log($"Player took {finalDamage} damage. HP: {combatStatus.CurrentHp}");
 
@@ -181,7 +249,7 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
         {
             animator.SetTrigger("revive");
             isInvulnerable = true;
-            combatStatus.CurrentHp = combatStatus.MaxHp;
+            combatStatus.CurrentHp = GetMaxHp();
             yield return new WaitForSeconds(invulnerabilityTime);
             animator.SetTrigger("onVulnerable");
             isInvulnerable = false;
@@ -208,9 +276,12 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
             direction.x = 0;
         }
 
-        float moveSpeed = baseMoveSpeed * (0.9f + combatStatus.baseStats[(int)BaseStatType.AGI] * 0.1f);
+        float agi = GetStat(BaseStatType.AGI);
+        float moveSpeed = baseMoveSpeed * (0.9f + agi * 0.1f);
+        
+        Vector2 targetVelocity = new Vector2(direction.x * moveSpeed, playerRigidbody.velocity.y);
+        playerRigidbody.velocity = Vector2.Lerp(playerRigidbody.velocity, targetVelocity, 0.2f); // 감속 부드럽게
 
-        playerRigidbody.velocity = new Vector2(direction.x * moveSpeed, playerRigidbody.velocity.y);
 
         if (direction.x != 0)
         {
@@ -219,20 +290,22 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
             transform.localScale = scale;
         }
 
-        animator.SetFloat("speed", Mathf.Abs(playerRigidbody.velocity.x));
+        //animator.SetFloat("speed", Mathf.Abs(playerRigidbody.velocity.x));
     }
 
-
-    public void Jump()
+    public void RequestJump()
     {
-        if (CombatStatus.IsDead)
-            return;
-        
-        if (isGrounded || jumpCount < maxAdditionalJumps)
+        jumpRequested = true;
+    }
+
+    private void TryJump()
+    {
+        if (CombatStatus.IsDead) return;
+        if (Time.time - lastGroundedTime <= coyoteTime || jumpCount < maxJumpCount)
         {
             playerRigidbody.velocity = new Vector2(playerRigidbody.velocity.x, jumpForce);
-            //animator.SetBool("jump", true);
             jumpCount++;
+            animator.SetTrigger("jump");
         }
     }
 
@@ -246,16 +319,79 @@ public class Player : MonoBehaviour, IAttacker, IDamageable, IMovable
             Destroy(weaponTransform.gameObject);
         }
 
-        Weapon _weapon = Instantiate(weapon);
-        _weapon.Init(this);
-        
-        GameObject weaponInstance = Instantiate(_weapon.BaseWeaponPrefab, WeaponTransform);
-
-        currentWeapon = _weapon;
-        
-        weaponInstance.transform.localScale *= weapon.ScaleModifier;
+        currentWeapon = Instantiate(weapon);
+        weaponInstance = Instantiate(currentWeapon.BaseWeaponPrefab, WeaponTransform);
+        currentWeapon.Init(this, weaponInstance);
         SpriteRenderer spriteRenderer = weaponInstance.GetComponent<SpriteRenderer>();
         if(spriteRenderer != null)
             spriteRenderer.sprite = weapon.Sprite;
     }
+
+    public void ReceiveReward(Reward reward)
+    {
+        StatModifiers.Add(StatModifierFactory.CreateModifier(reward.ability, reward.amount));
+        UpdateExtraStats();
+        CombatStatus.RefreshStat();
+        currentWeapon.RefreshWeapon(StatModifiers);
+    }
+
+    public void UpdateExtraStats()
+    {
+        extraStats.Clear();
+        foreach (IStatModifier modifier in StatModifiers)
+        {
+            if (modifier.GetType() == typeof(ExtraStatModifier))
+            {
+                ExtraStatModifier extraStatModifier = (ExtraStatModifier)modifier;
+                if (!extraStats.ContainsKey(extraStatModifier.StatType))
+                    extraStats[extraStatModifier.StatType] = 0;
+
+                extraStats[extraStatModifier.StatType] += extraStatModifier.Amount;
+            }
+        }
+    }
+
+    public float GetExtraStat(string statName)
+    {
+        if(extraStats.ContainsKey(statName))
+            return extraStats[statName];
+
+        return 0;
+    }
+
+    public float GetStat(BaseStatType statType)
+    {
+        return CombatStatus.CalculateFinalStat(statType, StatModifiers);
+    }
+
+    public long GetMaxHp()
+    {
+        float vit = GetStat(BaseStatType.VIT);
+        float hpPer = GetExtraStat("HPPercentage");
+
+        float baseHp = 50 * (vit + 1);
+        return Mathf.RoundToInt(baseHp * (1 + hpPer));
+    }
+
+    private void OnDestroy()
+    {
+        StopCoroutine(RegenerateHp());
+        Instance = null;
+    }
+    private void OnDrawGizmosSelected()
+    {
+        if (wallCheckPoint == null) return;
+
+        // 박스의 중심과 크기를 계산
+        Vector2 boxCenter = wallCheckPoint.position + Vector3.up * wallCheckYOffset;
+        Vector2 boxSize = new Vector2(wallCheckDistance, wallCheckHeight);
+
+        // 기즈모 색 설정
+        Gizmos.color = Color.red;
+
+        // 박스를 그림 (회전이 없으므로 Quaternion.identity)
+        Gizmos.DrawWireCube(boxCenter, boxSize);
+        Gizmos.DrawWireSphere(groundCheckPoint.position, groundCheckRadius);
+    }
+
 }

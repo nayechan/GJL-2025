@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Add Wand", fileName = "New Wand")]
@@ -23,5 +24,21 @@ public class Wand : Weapon
     public override void OnUse(Player _player)
     {
         _player.EquipWeapon(this);
+    }
+
+    public override string GetWeaponType()
+    {
+        return "Wand";
+    }
+
+    public override float GetBaseStat(string statType)
+    {
+        switch (statType)
+        {
+            case "MagicRadius":
+                return MagicRadius;
+            default:
+                return base.GetBaseStat(statType);
+        }
     }
 }

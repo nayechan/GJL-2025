@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Localization Table Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Localization Table
+  m_TableCollectionNameGuidString: 04a4367b98972ef41810df550763dba1
+  m_Entries:
+  - m_Id: 178238779392
+    m_Key: STR (Strength)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626317943402496
+    m_Key: AGI (Agility)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626321797967872
+    m_Key: VIT (Vitality)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626324444573696
+    m_Key: INT (Intelligence)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626340248711168
+    m_Key: DEX (Dexiterity)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3626345990713344
+    m_Key: LUK (Luck)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3627013312868352
+    m_Key: Close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3628724735700992
+    m_Key: APText
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629177783447552
+    m_Key: Go back to Main Menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629182271352832
+    m_Key: Stat Distribution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629842756792320
+    m_Key: Play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3629865368285184
+    m_Key: Exit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3630220168654848
+    m_Key: Menu
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 2793798858876649496
+  references:
+    version: 2
+    RefIds:
+    - rid: 2793798858876649496
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1749740170713

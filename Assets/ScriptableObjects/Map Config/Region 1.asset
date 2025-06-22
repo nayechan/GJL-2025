@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minFloor: 1
   maxFloor: 4
+  bgSprite: {fileID: 21300000, guid: 0a03888823afb6246b394a23502f4797, type: 3}
   chunkPrefabs:
   - {fileID: 1429020835105228816, guid: 9499c3c8ffb59664babe12d9f5cdae81, type: 3}
   - {fileID: 7019585879438109444, guid: 5710996a31d814f43bd8325739ae8c4e, type: 3}
@@ -37,16 +38,18 @@ MonoBehaviour:
   beginChunkPrefab: {fileID: 8542334237015816976, guid: 2018a2b669702a549a5842d4786e7de9, type: 3}
   exitChunkPrefab: {fileID: 8542334237015816976, guid: 392a684d07f52214da077c415830f9a4, type: 3}
   keyPrefab: {fileID: 5618182455393986224, guid: dd62aa5b40d6e0f4994255da7c1fd050, type: 3}
+  exitChunkDoorPos: {x: 8, y: 5}
+  bossEnemyPrefab: {fileID: 0}
+  bossEnemyPos: {x: 17, y: 5}
   blockTile: {fileID: 11400000, guid: 0816205b1e7bcb74aa114ce624692f9e, type: 2}
   obstacleTile: {fileID: 11400000, guid: f565301367e72eb43acb86cc52ce686b, type: 2}
   targetBlockTile: {fileID: 11400000, guid: 5b75f5dfcc48b154ea4ec38a4d673a97, type: 2}
   targetObstacleTile: {fileID: 11400000, guid: f565301367e72eb43acb86cc52ce686b, type: 2}
   chunkSize: {x: 9, y: 9}
   width: 4
-  height: 4
+  height: 8
   beginChunkX: 1
   endChunkX: 1
   beginChunkWidth: 2
   endChunkWidth: 2
   unlockedDoorPortalPrefab: {fileID: 8542334237015816976, guid: bb0e7bc6b500db340aafda60708eb10c, type: 3}
-  endChunkDoorPos: {x: 8, y: 5}

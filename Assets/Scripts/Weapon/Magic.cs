@@ -10,25 +10,27 @@ public class Magic : MonoBehaviour
     
     [SerializeField] private GameObject magicEffect;
     [SerializeField] private float duration; // In seconds
+    [SerializeField] private AudioClip sfx;
     
     public void Init(Wand _wand)
     {
         wand = _wand;
         hitTargets = new HashSet<IDamageable>();
+        AudioManager.Instance.PlaySFX(sfx);
         Destroy(this.gameObject, duration);
         
         int magicCount = Random.Range(wand.MinMagicCount, wand.MaxMagicCount+1);
 
         for (int i = 0; i < magicCount; ++i)
         {
-            Vector2 pos = Random.insideUnitCircle * wand.MagicRadius;
+            Vector2 pos = Random.insideUnitCircle * wand.GetFinalStat("MagicRadius");
             GameObject effect = Instantiate(
                 magicEffect, transform.position + (Vector3)pos, 
                 Quaternion.identity, transform);
             
             float scale = Random.Range(wand.MinMagicScale, wand.MaxMagicScale);
             effect.transform.localScale *= scale;
-            effect.transform.localScale *= wand.ScaleModifier;
+            effect.transform.localScale *= wand.GetFinalStat("Size");
         }
     } 
     

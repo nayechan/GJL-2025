@@ -10,9 +10,9 @@ An action roguelike where you climb an endless tower, slay enemies, and grow str
 
 You start with three weapons and can freely switch between them during combat. As you level up, you can increase one stat of your choice from the following:
 
-- STR (Strength)
-- INT (Intelligence)
-- DEX (Dexterity)
+- STR (Strength) - Boosts sword damage
+- INT (Intelligence) - Boosts wand damage
+- DEX (Dexterity) - Boosts shuriken damage
 - VIT (Vitality)
 - AGI (Agility)
 - LUK (Luck)

@@ -6,7 +6,7 @@ An action roguelike where you climb an endless tower, slay enemies, and grow str
 
 - **Move**: `A` and `D` keys (left/right)
 - **Jump**: `Space`
-- **Switch Weapons**: `1`, `2`, `3`
+- **Switch Weapons**: `1` (Sword), `2` (Wand), `3` (Shuriken)
 
 You start with three weapons and can freely switch between them during combat. As you level up, you can increase one stat of your choice from the following:
 

@@ -1,48 +1,57 @@
-# [Game Title]
+# Tower of Ouroboros
 
-## About the Game
+An action roguelike where you climb an endless tower, slay enemies, and grow stronger with every floor.
 
-[Game Title] is a 2D roguelike/RPG game created for the GJL Game Parade "Spring" 2025 held in June 2025.
+## 🎮 How to Play
 
-## How to Play
+- **Move**: `A` and `D` keys (left/right)
+- **Jump**: `Space`
+- **Switch Weapons**: `1`, `2`, `3`
 
-- Use [WASD / Arrow keys] to move your character.  
-- Press [Space / Left Click] to attack enemies.  
-- Defeat enemies to gain experience and loot.  
-- Find health potions and upgrade your gear to survive longer.
+You start with three weapons and can freely switch between them during combat. As you level up, you can increase one stat of your choice from the following:
 
-## Features
+- STR (Strength)
+- INT (Intelligence)
+- DEX (Dexterity)
+- VIT (Vitality)
+- AGI (Agility)
+- LUK (Luck)
 
-- Challenging enemy AI and combat system  
-- Character stats like health, attack power, and defense  
-- Simple and intuitive controls suitable for desktop platforms
+After clearing each stage, you’ll be able to upgrade your weapons or improve your stats. Occasionally, you may acquire rare special abilities that drastically change your playstyle.
 
-## Controls
+The core challenge is to reach higher and higher floors — how far can you ascend?
 
-| Action   | Input            |
-| -------- | ---------------- |
-| Move     | WASD / Arrow Keys |
-| Attack   | Space / Left Click|
-| Pause    | Esc              |
+## 🧱 Features
 
-## Installation / Running the Game
+- Fast-paced 2D platforming and hack-and-slash combat
+- Three weapon types with on-the-fly switching
+- Stat growth system with player choice
+- Procedurally scaling tower levels
+- Hidden rare upgrades and ability rolls
 
-- Download the game build from link 
-- No installation required
+## 🛠️ Build & Dependencies
 
-## Known Issues
+This project is developed using **Unity 2022 LTS**.
 
-- [List any bugs or issues players should be aware of]  
-- [Example: Some enemies may get stuck in walls]
+> ⚠️ Note: This project uses a private Git submodule under `Assets/ThirdParties/`, which is **not included** in the public repository. Please contact the development team if you require access.
 
-## Credits
+To run the project locally:
+1. Open in Unity 2022 LTS or later.
+2. Remove or stub missing dependencies under `Assets/ThirdParties/` if needed.
+3. Open the main scene and press Play.
 
-- Developed by: Hyeonwoo Cho (Director) / Yechan Na (Programmer) / Kirial (Designer)
-- Special thanks to: [Anyone you'd like to credit]  
-- Assets: [Mention sources if using free assets]
+## 👥 Team
+
+**Team Ascension**
+
+- **Ancy** – Developer  
+- **saypiria** – Director  
+- **kirial** – Dot Graphic Designer
+
+## 🕹️ Game Jam Info
+
+This game was created for the [GJL Game Parade Spring 2025](https://itch.io/jam/gjl-game-parade-spring-2025) game jam.
 
 ---
 
-Thank you for playing!  
-Feel free to share feedback and suggestions.
-
+*Thank you for playing!*
